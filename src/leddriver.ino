@@ -62,7 +62,7 @@
 
 //Operation Defines
 #define COL_MAX   15
-#define COL_DELAY 500  // microsecond delay bettween col draws
+#define COL_DELAY 750  // microsecond delay bettween col draws, brightness essentially?
 
 //#define ROW_MAX   7  // use HEIGHT rather
 #define BLOCK_SIZE  6
@@ -196,8 +196,6 @@ static inline void demux_select( const uint8_t address){
 static inline void toggle_demux(){
   // activate the demux
   digitalWriteFast(DEMUX_EN_G2B, LOW);
-  // Wait
-  delayMicroseconds(2);
   // deactivate the demux
   digitalWriteFast(DEMUX_EN_G2B, HIGH);
 }
@@ -272,9 +270,9 @@ static inline void col_select(const unsigned col){
     // write data
     //col_add == col ? digitalWriteFast(COL_LATCH_D, LOW) : digitalWriteFast(COL_LATCH_D, HIGH); // active low
     if(col_add == col){
-      digitalWrite(COL_LATCH_D,LOW);
+      digitalWriteFast(COL_LATCH_D,LOW);
     }else{
-      digitalWrite(COL_LATCH_D,HIGH);
+      digitalWriteFast(COL_LATCH_D,HIGH);
     }
     toggle_demux();
   }
@@ -282,7 +280,7 @@ static inline void col_select(const unsigned col){
   // select the second col latch
   demux_select(7);
   // activate only this col on the col latch
-  for(unsigned col_add = 0; col_add < 8 ; col_add++){
+  for(unsigned col_add = 0; col_add < 7 ; col_add++){ // only go to 7, last output doesn't exist
     // select address
     /*col_add & S0_MASK > 0 ? digitalWriteFast(COL_LATCH_S0, HIGH) : digitalWriteFast(COL_LATCH_S0, LOW);
     col_add & S1_MASK > 0 ? digitalWriteFast(COL_LATCH_S1, HIGH) : digitalWriteFast(COL_LATCH_S1, LOW);
@@ -323,7 +321,7 @@ static inline void col_select(const unsigned col){
         digitalWriteFast(COL_LATCH_S1, HIGH);
         digitalWriteFast(COL_LATCH_S2, HIGH);
       break;
-      case 7:
+      case 7: // should never get here, doesn't exist
         digitalWriteFast(COL_LATCH_S0, HIGH);
         digitalWriteFast(COL_LATCH_S1, HIGH);
         digitalWriteFast(COL_LATCH_S2, HIGH);
@@ -337,9 +335,9 @@ static inline void col_select(const unsigned col){
     // write data (offset of 8 cols for second latch)
     //(col_add + 8) == col ? digitalWriteFast(COL_LATCH_D, LOW) : digitalWriteFast(COL_LATCH_D, HIGH); // active low
     if((col_add+8) == col){
-      digitalWrite(COL_LATCH_D,LOW);
+      digitalWriteFast(COL_LATCH_D,LOW);
     }else{
-      digitalWrite(COL_LATCH_D,HIGH);
+      digitalWriteFast(COL_LATCH_D,HIGH);
     }
     toggle_demux();
   }
@@ -389,21 +387,40 @@ void ledmatrix_draw(){
 
     } // all row data latched in
 
-    // deactivate the demux
-    digitalWriteFast(DEMUX_EN_G2B, HIGH);
     // select the correct col with the two col latches
     col_select(col);
 
-    // deactivate the demux
-    digitalWriteFast(DEMUX_EN_G2B, HIGH);
     // wait for the POV col delay time
     delayMicroseconds(COL_DELAY);
+    // should turn all cols off before we return... (col 15 doesnt exisit so this will make sure no col is activated)
+    col_select(15);
 
   } // rinse and repeat for each col :D
 
-  // set reset
-  //digitalWrite(RST, LOW);
 
+}
+
+/** Set an entire column at once */
+void
+ledmatrix_set_col(
+	const uint8_t col,
+	const uint8_t bits,
+	const uint8_t bright
+)
+{
+	for (uint8_t i = 0 ; i < HEIGHT ; i++)
+		ledmatrix_set(col, i, (bits & (1 << i)) ? bright : 0);
+}
+
+
+void
+ledmatrix_set(
+	const uint8_t col,
+	const uint8_t row,
+	const uint8_t bright
+)
+{
+	fb[row][col] = bright;
 }
 
 void ledmatrix_test(uint8_t valx, uint8_t valy){
