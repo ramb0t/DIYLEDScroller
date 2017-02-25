@@ -16,5 +16,10 @@ ledmatrix_setup();
 extern void
 ledmatrix_draw();
 
+extern void
+ledmatrix_test(uint8_t valx, uint8_t valy);
+
+extern void
+ledmatrix_test2(uint8_t val);
 
 #endif
