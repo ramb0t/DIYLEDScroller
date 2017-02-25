@@ -9,4 +9,12 @@
 #define WIDTH 90
 #define HEIGHT 7
 
+
+extern void
+ledmatrix_setup();
+
+extern void
+ledmatrix_draw();
+
+
 #endif
