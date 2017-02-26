@@ -62,7 +62,7 @@
 
 //Operation Defines
 #define COL_MAX   15
-#define COL_DELAY 750  // microsecond delay bettween col draws, brightness essentially?
+#define COL_DELAY 500  // microsecond delay bettween col draws, brightness essentially?
 
 //#define ROW_MAX   7  // use HEIGHT rather
 #define BLOCK_SIZE  6

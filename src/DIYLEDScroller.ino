@@ -2,13 +2,16 @@
 
 #define ONE_DAY_MILLIS (24*60*60*1000)
 
+
+bool cloudflag;
+String cloudstring;
+
+
 static int
 show_string(String s)
 {
-	draw_clear();
-
-	for(unsigned i = 0 ; i < s.length() && i*5 < 90 ; i++)
-		draw_char(i*5, s.charAt(i));
+  cloudstring = s;
+  cloudflag = true;
 
 	return s.length();
 }
@@ -64,17 +67,30 @@ uint8_t val;
 void setup(){
   Spark.function("show", show_string);
   ledmatrix_setup();
-  for(unsigned i = 0 ; i < 255 ; i++) ledmatrix_draw();
+  draw_clear();
   draw_string("DIYLEDScroller");
   for(unsigned i = 0 ; i < 255 ; i++) ledmatrix_draw();
+  Time.zone(+2);
   valx = 0;
   valy = 0;
   val = 0;
+  cloudflag = false;
 }
 
 
 //Main Loop Entry Point
 void loop(){
+  if (cloudflag){
+    draw_clear();
+
+  	for(unsigned i = 0 ; i < cloudstring.length() && i*5 < 90 ; i++)
+  		draw_char(i*5, cloudstring.charAt(i));
+
+
+    for(unsigned i = 0 ; i < 255 ; i++) ledmatrix_draw();
+    for(unsigned i = 0 ; i < 255 ; i++) ledmatrix_draw();
+    cloudflag=false;
+  }
 
   static uint32_t last_sync;
 	const uint32_t now_millis = millis();
@@ -135,6 +151,8 @@ void loop(){
 
 		ledmatrix_draw();
 	}
+
+
 
   //for(unsigned i = 0 ; i < 4 ; i++) ledmatrix_draw();
 
