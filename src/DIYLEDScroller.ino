@@ -1,10 +1,13 @@
 #include "DIYLEDScroller.h"
 
 #define ONE_DAY_MILLIS (24*60*60*1000)
+#define SCREEN_LENGTH 18
 
 
 bool cloudflag;
 String cloudstring;
+String cvEvent;
+String cvData;
 
 
 static int
@@ -65,7 +68,16 @@ uint8_t val;
 
 //Setup Entry Point
 void setup(){
+  //Pin Setup
+  pinMode(BUZZ_PIN, OUTPUT);
+
+  // Cloud functions
   Spark.function("show", show_string);
+
+  // Cloud Variables registration
+  Spark.variable("cvEvent",cvEvent);
+  Spark.variable("cvData",cvData);
+
   ledmatrix_setup();
   draw_clear();
   draw_string("DIYLEDScroller");
@@ -75,20 +87,66 @@ void setup(){
   valy = 0;
   val = 0;
   cloudflag = false;
+  //We "Subscribe" to our IFTTT event called Button so that we get events for it
+   Particle.subscribe("CiandriZButton", myHandler);
+
+   digitalWrite(BUZZ_PIN, HIGH);
+   delay(300);
+   digitalWrite(BUZZ_PIN, LOW);
+
 }
 
 
 //Main Loop Entry Point
 void loop(){
+  // Check if we have a cloud string
   if (cloudflag){
+    // Beep!
+    digitalWrite(BUZZ_PIN, HIGH);
+    delay(75);
+    digitalWrite(BUZZ_PIN, LOW);
+    delay(150);
+    digitalWrite(BUZZ_PIN, HIGH);
+    delay(75);
+    digitalWrite(BUZZ_PIN, LOW);
+    delay(150);
+    digitalWrite(BUZZ_PIN, HIGH);
+    delay(75);
+    digitalWrite(BUZZ_PIN, LOW);
+
     draw_clear();
 
-  	for(unsigned i = 0 ; i < cloudstring.length() && i*5 < 90 ; i++)
-  		draw_char(i*5, cloudstring.charAt(i));
+    // Scolling code!
+    // first determine if the string is longer than the max size?
+    if(cloudstring.length() < SCREEN_LENGTH ){ // shorter than max...
+
+      // just do the 'old code' xD
+      // loop through string and draw each char
+      for(unsigned i = 0 ; i < cloudstring.length() && i*5 < 90 ; i++) // 18 chars max :)
+        draw_char(i*5, cloudstring.charAt(i));
+
+      //crude delay for'some' time...
+      for(unsigned i = 0 ; i < 255 ; i++) ledmatrix_draw();
+      for(unsigned i = 0 ; i < 255 ; i++) ledmatrix_draw();
+
+    }else{ // longer than max, need to scroll!
+
+      for(unsigned c = 0 ; c <= cloudstring.length() - SCREEN_LENGTH ; c++){ // loop through the excess...
+
+        // get the substring
+        String sbuf = cloudstring.substring(c,c + SCREEN_LENGTH);
+        // loop through string and draw each char
+      	for(unsigned i = 0 ; i < sbuf.length() && i*5 < 90 ; i++) // 18 chars max :)
+      		draw_char(i*5, sbuf.charAt(i));
+
+        //crude delay for'some' time...
+        for(unsigned i = 0 ; i < 100 ; i++) ledmatrix_draw();
+        draw_clear(); // not sure if needed?
+      }
+    }
 
 
-    for(unsigned i = 0 ; i < 255 ; i++) ledmatrix_draw();
-    for(unsigned i = 0 ; i < 255 ; i++) ledmatrix_draw();
+    // finally clear the flag.
     cloudflag=false;
   }
 
@@ -173,4 +231,15 @@ void loop(){
       //ledmatrix_setup();
     }
   }*/
+}
+
+
+
+//The function that handles the event from IFTTT
+void myHandler(const char *event, const char *data){
+    cvEvent = event;
+    cvData = data;
+
+    show_string(data);
+
 }

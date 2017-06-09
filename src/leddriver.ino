@@ -18,7 +18,7 @@
  * A2 B
  * A3 C
  * A4 G2A
- * A5
+ * A5 Speaker / beeper!
  * A6
  * A7
 */

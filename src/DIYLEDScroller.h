@@ -9,6 +9,9 @@
 #define WIDTH 90
 #define HEIGHT 7
 
+// Pin defines:
+#define BUZZ_PIN	A5
+
 extern uint8_t LETTERS[][5];
 
 extern void
