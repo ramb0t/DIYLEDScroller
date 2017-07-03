@@ -9,6 +9,8 @@ String cloudstring;
 String cvEvent;
 String cvData;
 
+int old_millis;
+
 
 static int
 show_string(String s)
@@ -94,6 +96,7 @@ void setup(){
    delay(300);
    digitalWrite(BUZZ_PIN, LOW);
 
+   //old_min = Time.minute();
 }
 
 
@@ -134,7 +137,7 @@ void loop(){
     }else{ // longer than max, need to scroll!
       // append 18 blank chars on the end for scrolling effect
       cloudstring = cloudstring + "                  ";
-      cloudstring = "                  " + cloudstring;
+      cloudstring = "DIYElectronics.co.za | " + cloudstring;
 
       for(unsigned j = 0 ; j < 3 ; j ++){ // outter repeat
         for(unsigned c = 0 ; c <= cloudstring.length() - SCREEN_LENGTH ; c++){ // loop through the excess chars...
@@ -156,6 +159,29 @@ void loop(){
 
     // finally clear the flag.
     cloudflag=false;
+  } // cloud string...
+
+  if(millis() > (old_millis + (1000*30))){ // time to scroll twitter update
+    String infostring = "DIYElectronics.co.za | Tag @DIYElectronic on Twitter to see your tweet here!!!";
+    // append 18 blank chars on the end for scrolling effect
+    infostring = infostring + "                  ";
+
+    for(unsigned j = 0 ; j < 3 ; j ++){ // outter repeat
+      for(unsigned c = 0 ; c <= infostring.length() - SCREEN_LENGTH ; c++){ // loop through the excess chars...
+
+        // get the substring
+        String sbuf = infostring.substring(c,c + SCREEN_LENGTH);
+        // loop through string and draw each char
+        for(unsigned i = 0 ; i < sbuf.length() && i*5 < 90 ; i++){ // 18 chars max :)
+              draw_char(i*5, sbuf.charAt(i));
+        }
+
+        //crude delay for'some' time...
+        for(unsigned i = 0 ; i < 15 ; i++) ledmatrix_draw();
+        draw_clear(); // not sure if needed?
+      }
+    } // end repeat
+    old_millis = millis();
   }
 
   static uint32_t last_sync;
